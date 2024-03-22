@@ -1,7 +1,7 @@
 package commonMongoService
 
 import (
-	commonMongoRepoDomain "github.com/ingdeiver/go-core/src/commons/domain/repository"
+	commonMongoRepoDomain "github.com/ingdeiver/go-core/src/commons/domain/interfaces"
 	commonMongoRepository "github.com/ingdeiver/go-core/src/commons/infrastructure/mongo/repository"
 )
 

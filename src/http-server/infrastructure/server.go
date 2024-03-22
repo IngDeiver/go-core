@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	errorMiddlware "github.com/ingdeiver/go-core/src/commons/infrastructure/middlewares"
 )
 
 type HttpServer struct {
@@ -82,4 +83,10 @@ func (server *HttpServer) gracefulShutdown() {
 	// to finalize based on context cancellation.
 	log.Println("shutting down")
 	os.Exit(0)
+}
+
+
+func (s *HttpServer) ConfigMiddlewares(router *gin.Engine) {
+	router.Use(errorMiddlware.ErrorHandlingMiddleware)
+	router.Use(gin.Recovery())
 }

@@ -6,6 +6,8 @@ import (
 	"os"
 	"time"
 
+	auth "github.com/ingdeiver/go-core/src/auth/application/services"
+	authControl "github.com/ingdeiver/go-core/src/auth/infrastructure/framework/controllers"
 	httpServer "github.com/ingdeiver/go-core/src/http-server/infrastructure"
 	userServices "github.com/ingdeiver/go-core/src/users/application/services"
 	userRepositories "github.com/ingdeiver/go-core/src/users/infrastructure/mongo/repositories"
@@ -62,6 +64,10 @@ func start(){
 	userRepository := userRepositories.New()
 	userService := userServices.New(userRepository)
 	userService.Base.List()
+
+
+	authService := auth.New(&userRepository)
+	authController := authControl.New(&authService)
 	
 	// ws config
 	webSocketDomain := wsDomain.New()
@@ -72,7 +78,16 @@ func start(){
 	//Use it if you need to server static files
 	server.ConfigureStaticFiles("public", router) 
 	
+	// set middlewares
+	server.ConfigMiddlewares(router)
+
+	// routes
+	authRouter :=router.Group("/auth")
+	{
+		authRouter.POST("/login", authController.Login)
+	}
 	
+
 	// start server
 	server.StartServer()
 }
