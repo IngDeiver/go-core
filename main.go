@@ -1,13 +1,14 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"os"
 	"time"
 
 	auth "github.com/ingdeiver/go-core/src/auth/application/services"
 	authControl "github.com/ingdeiver/go-core/src/auth/infrastructure/framework/controllers"
+	authMiddleware "github.com/ingdeiver/go-core/src/auth/infrastructure/framework/middlewares"
+	logger "github.com/ingdeiver/go-core/src/commons/infrastructure/logs"
 	httpServer "github.com/ingdeiver/go-core/src/http-server/infrastructure"
 	userServices "github.com/ingdeiver/go-core/src/users/application/services"
 	userRepositories "github.com/ingdeiver/go-core/src/users/infrastructure/mongo/repositories"
@@ -18,6 +19,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
+var l = logger.Get()
+
 
 func main() {
 	loadEnv()
@@ -25,7 +28,7 @@ func main() {
 }
 
 func loadEnv() {
-	env := os.Getenv("ENVIRONMENT")
+	env := os.Getenv("APP_ENV")
     var err error
 
     switch env {
@@ -38,19 +41,19 @@ func loadEnv() {
     }
 
     if err != nil {
-        log.Fatal("Error loading .env file")
+        l.Fatal().Msg("Error loading .env file")
     }
 
 	if len(env) > 0 {
-		log.Printf("Environment loaded: %s", env)
+		l.Info().Msgf("Environment loaded: %s", env)
 	}else {
-		log.Print("Environment loaded: local")
+		l.Info().Msg("Environment loaded: local")
 	}
 }
 
 func start(){
-	router := gin.Default()
-
+	router := gin.New()
+	
 	s := &http.Server{
 		//Addr:           ":8080", // Optional, the value of the PORT variable will be used if it exists, otherwise it will be used ,the pure 80
 		Handler:        router, // Optional, pass null if you do not use a handler
@@ -58,7 +61,12 @@ func start(){
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
-	server := httpServer.New(s)
+
+	port := os.Getenv("PORT")
+    if port == "" {
+        port = "8000"
+    }
+	server := httpServer.New(s, port)
 	
 
 	userRepository := userRepositories.New()
@@ -79,16 +87,23 @@ func start(){
 	server.ConfigureStaticFiles("public", router) 
 	
 	// set middlewares
-	server.ConfigMiddlewares(router)
+	server.ConfigGlobalMiddlewares(router)
 
 	// routes
 	authRouter :=router.Group("/auth")
 	{
 		authRouter.POST("/login", authController.Login)
 	}
+
+	userRouter :=router.Group("/users")
+	{
+		userRouter.Use(authMiddleware.AuthMiddleware())
+		userRouter.POST("/",  authController.Some)
+	}
 	
 
 	// start server
+	l.Info().Msgf("Starting server on port: %v \n", port)
 	server.StartServer()
 }
 

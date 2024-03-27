@@ -1,14 +1,12 @@
 package wshHandlers
 
 import (
-	"fmt"
-	"log"
-
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	logger "github.com/ingdeiver/go-core/src/commons/infrastructure/logs"
 	wsDomain "github.com/ingdeiver/go-core/src/ws/domain"
 )
-
+var l = logger.Get()
 var upgrader = websocket.Upgrader{}
 
 type WebSocketHandlerManager struct {
@@ -26,22 +24,20 @@ func ( manager *WebSocketHandlerManager) handleConnection(conn *websocket.Conn) 
 		if err != nil {
 			switch {
 			case websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway, websocket.CloseNoStatusReceived):
-				log.Println("The connection was closed")
+				l.Info().Msg("The connection was closed")
 				//then remove connection
 			default:
-				errorFormat := fmt.Errorf("read message error: %v", err)
-				log.Println(errorFormat)
+				l.Error().Msgf("read message error: %v", err)
 			}
 
 			return
 		}
 
 		if err := conn.WriteMessage(messageType, p); err != nil {
-			errorFormat := fmt.Errorf("write message error: %v", err)
-			log.Println(errorFormat)
+			l.Error().Msgf("write message error: %v", err)
 			return
 		}
-		fmt.Printf("Received message: '%s' of type: %v \n", p, messageType)
+		l.Info().Msgf("Received message: '%s' of type: %v \n", p, messageType)
 	}
 }
 
@@ -54,8 +50,7 @@ func (manager *WebSocketHandlerManager) Handler() func(*gin.Context) {
 	return func(c *gin.Context) {
 		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 		if err != nil {
-			errorFormat := fmt.Errorf("new connection error => %v", err)
-			log.Println(errorFormat)
+			l.Error().Msgf("new connection error => %v", err)
 			return
 		}
 

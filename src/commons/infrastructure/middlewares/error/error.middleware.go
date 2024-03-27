@@ -6,12 +6,18 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	errorsDomain "github.com/ingdeiver/go-core/src/commons/domain/errors"
+	logger "github.com/ingdeiver/go-core/src/commons/infrastructure/logs"
 )
 
+var l = logger.Get()
+
+// Management each error pushed by c.Error()
 func ErrorHandlingMiddleware(c *gin.Context) {
     c.Next()
     for _, ginErr := range c.Errors {
         err := ginErr.Err
+        l.Error().Err(err).Send()
+
         if validationErrors, ok := err.(validator.ValidationErrors); ok {
             c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
                 "message": validationErrors.Error(),
@@ -19,8 +25,8 @@ func ErrorHandlingMiddleware(c *gin.Context) {
             return
         }
         switch err {
-            case errorsDomain.ErrInternalServerError:
-                c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+            case errorsDomain.ErrNotFoundError:
+                c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
                     "message": err.Error(),
                 })
             case errorsDomain.ErrUnauthorizedError:
@@ -29,7 +35,7 @@ func ErrorHandlingMiddleware(c *gin.Context) {
                 })
             default :
                 c.AbortWithStatusJSON(http.StatusInternalServerError,  gin.H{
-                    "message": err.Error(),
+                    "message": errorsDomain.ErrInternalServerError.Error(),
                 })
         }
     }

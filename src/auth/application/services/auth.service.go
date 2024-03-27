@@ -1,6 +1,7 @@
 package authService
 
 import (
+	"errors"
 	"os"
 	"time"
 
@@ -8,21 +9,26 @@ import (
 	authDomain "github.com/ingdeiver/go-core/src/auth/domain"
 	authDto "github.com/ingdeiver/go-core/src/auth/domain/dto"
 	errDomain "github.com/ingdeiver/go-core/src/commons/domain/errors"
+
+	logger "github.com/ingdeiver/go-core/src/commons/infrastructure/logs"
 	userDomain "github.com/ingdeiver/go-core/src/users/domain"
 	userRepo "github.com/ingdeiver/go-core/src/users/infrastructure/mongo/repositories"
 )
+
+var l = logger.Get()
 
 type AuthService struct {
 	userRepository  *userRepo.UserRepository
 }
 
-func (service *AuthService) Login(login authDto.LoginDto) (authDomain.Auth, error) {
+func (service *AuthService) Login(login authDto.LoginDto) (authDomain.AuthWithToken, error) {
 	
 	var user *userDomain.User
-	var response authDomain.Auth
+	var response authDomain.AuthWithToken
 
 	//validate if exist by email
 
+	user = &userDomain.User{"1","Deiver","Email", "PWD"}
 	if user == nil {
 		return response, errDomain.ErrUnauthorizedError
 	}
@@ -32,18 +38,19 @@ func (service *AuthService) Login(login authDto.LoginDto) (authDomain.Auth, erro
 		return response, errDomain.ErrUnauthorizedError
 	}
 
-	token, err := createToken(*user)
+	token, err := createUserToken(*user)
 	if err != nil {
-		return response, errDomain.ErrInternalServerError
+		return response, err
 	}
 
-	response = authDomain.New(*user, token)
+	response = authDomain.NewAuthTokenResponse(*user, token)
 	return response, nil
 }
 
-func createToken (user userDomain.User) (string, error) {
+
+func createUserToken (user userDomain.User) (string, error) {
 	secret := os.Getenv("JWT_SECRET")
-	claims := authDomain.AuthClaims{
+	claims := authDomain.AuthWithClaims{
 		ID: user.ID,
 		Name: user.Name,
 		Email: user.Email,
@@ -53,39 +60,39 @@ func createToken (user userDomain.User) (string, error) {
 			NotBefore: jwt.NewNumericDate(time.Now()),
 		},
 	}
-	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(secret)
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(secret))
 	return token, err
 }
 
-/*func validateToken(tokenString string) (bool, error){
+func ValidateToken(tokenString string) (*authDomain.Auth, error){
 	secret := os.Getenv("JWT_SECRET")
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &authDomain.AuthWithClaims{}, func (token *jwt.Token) (interface{}, error) {
 		return []byte(secret), nil
 	})
 	
 	switch {
 	case token.Valid:
-		return true, nil
+		if claims, ok := token.Claims.(*authDomain.AuthWithClaims); ok {
+			return &authDomain.Auth{ID: claims.ID, Name: claims.Name, Email: claims.Email}, nil
+		}
+		return nil, errDomain.ErrUnauthorizedError
 	case errors.Is(err, jwt.ErrTokenMalformed):
-		err := errors.New("That's not even a token")
-		log.Println(err)
-		return false, err
+		l.Error().Msg("That's not even a token")
+		return nil, err
 	case errors.Is(err, jwt.ErrTokenSignatureInvalid):
 		// Invalid signature
-		err := errors.New("Invalid signature")
-		log.Println(err)
-		return false, err
+		l.Error().Msg("Invalid signature")
+		return nil, err
 	case errors.Is(err, jwt.ErrTokenExpired) || errors.Is(err, jwt.ErrTokenNotValidYet):
 		// Token is either expired or not active yet
 		// Invalid signature
-		err := errors.New("Timing is everything")
-		log.Println(err)
-		return false, err
+		l.Error().Msg("Timing is everything")
+		return nil, err
 	default:
-		log.Println("Couldn't handle this token:", err)
-		return false, err
+		l.Info().Msgf("Couldn't handle this token: %v", err.Error())
+		return nil, err
 	}
-}*/
+}
 
 func New(repo  *userRepo.UserRepository) AuthService{
 return AuthService{repo}

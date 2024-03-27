@@ -3,58 +3,59 @@ package httpServer
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
 
+	logger "github.com/ingdeiver/go-core/src/commons/infrastructure/logs"
+
 	"github.com/gin-gonic/gin"
-	errorMiddlware "github.com/ingdeiver/go-core/src/commons/infrastructure/middlewares"
+	errorMiddlware "github.com/ingdeiver/go-core/src/commons/infrastructure/middlewares/error"
+	loggerMiddleware "github.com/ingdeiver/go-core/src/commons/infrastructure/middlewares/logger"
+	recoveryMiddleware "github.com/ingdeiver/go-core/src/commons/infrastructure/middlewares/recovery"
 )
+
+var l = logger.Get()
 
 type HttpServer struct {
 	http *http.Server
 }
 
-func New(http *http.Server) *HttpServer {
-
-	if PORT := os.Getenv("PORT"); len(PORT) > 0 {
-		log.Println("Listening on port", PORT)
-		http.Addr = fmt.Sprintf(":%v", PORT)
-	}
-
+func New(http *http.Server, port string) *HttpServer {
+	http.Addr = fmt.Sprintf(":%v", port)
 	return &HttpServer{http}
 }
 
 func (server *HttpServer) ConfigureStaticFiles(path string, router *gin.Engine) {
 	if router == nil {
-		log.Fatal("Did not provide a router")
+		l.Fatal().Msg("Did not provide a router")
+		return
 	}
 	router.StaticFS(path, http.Dir(path))
 	
-	log.Printf("The %s directory was configured to serve static files.", path)
+	l.Info().Msgf("The %s directory was configured to serve static files.", path)
 }
 
 func (s *HttpServer) SetWebSocketHandler(handler func(*gin.Context), router *gin.Engine) {
 	if router == nil {
-		log.Fatal("Did not provide a router")
+		l.Fatal().Msg("Did not provide a router")
+		return
 	}
 	router.GET("/ws", handler)
-	log.Println("Web socket atached with /ws prefix")
+	l.Info().Msg("Web socket atached with /ws prefix")
 }
 
 func (server *HttpServer) StartServer() {
-
+	
 	if server.http == nil {
-		log.Fatal("Not exists server instance")
+		l.Fatal().Msg("Not exists server instance")
 	}
 
 	go func() {
 		err := server.http.ListenAndServe()
 		if err != nil {
-			errorFormat := fmt.Errorf("start server error => %v", err)
-			log.Fatal(errorFormat)
+			l.Fatal().Msgf("start server error => %v", err)
 		}
 	}()
 
@@ -81,12 +82,13 @@ func (server *HttpServer) gracefulShutdown() {
 	// Optionally, you could run srv.Shutdown in a goroutine and block on
 	// <-ctx.Done() if your application should wait for other services
 	// to finalize based on context cancellation.
-	log.Println("shutting down")
+	l.Info().Msg("shutting down server")
 	os.Exit(0)
 }
 
 
-func (s *HttpServer) ConfigMiddlewares(router *gin.Engine) {
+func (s *HttpServer) ConfigGlobalMiddlewares(router *gin.Engine) {
+	router.Use(loggerMiddleware.LoggerMiddleware())
+	router.Use(recoveryMiddleware.CustomRecoveryMiddleware())
 	router.Use(errorMiddlware.ErrorHandlingMiddleware)
-	router.Use(gin.Recovery())
 }
