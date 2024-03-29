@@ -1,6 +1,6 @@
-package commonServiceDomain
+package baseServiceDomain
 
-type ServiceDomain[T any] interface {
+type BaseServiceDomain[T any] interface {
 	List() ([]T, error)
 	Add(document T) (T, error)
 	Get(ID string) (T, error)

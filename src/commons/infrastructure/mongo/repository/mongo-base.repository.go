@@ -1,7 +1,7 @@
 package commonMongoRepository
 
 // implements BaseRepositoryDomain
-type  MongoBaseRepository[T any] struct {
+type MongoBaseRepository[T any] struct {
 	
 }
 

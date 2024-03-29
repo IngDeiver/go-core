@@ -71,7 +71,12 @@ func start(){
 
 	userRepository := userRepositories.New()
 	userService := userServices.New(userRepository)
-	userService.Base.List()
+	data, err := userService.Base.List()
+
+	if err != nil {
+		l.Fatal().Msgf("data errro => %v ", err)
+	}
+	l.Info().Msgf("data => %v", data)
 
 
 	authService := auth.New(&userRepository)

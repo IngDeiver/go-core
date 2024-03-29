@@ -34,3 +34,8 @@ type AuthWithClaims struct {
 	Email string `json:"email"`
 	jwt.RegisteredClaims
 }
+
+type GenericJWTClaims struct {
+	Body map[string]interface{}
+	jwt.RegisteredClaims
+}

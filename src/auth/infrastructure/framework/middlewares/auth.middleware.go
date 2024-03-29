@@ -19,7 +19,7 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		token := authHeader[len(bearerSchema):]
 
-		auth, err := authService.ValidateToken(token)
+		auth, err := authService.ValidateAuthToken(token)
 		if auth == nil || err != nil {
 			c.Error(errorsDomain.ErrUnauthorizedError)
 			return

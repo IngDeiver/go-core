@@ -1,4 +1,4 @@
-package commonRepositoryDomain
+package baseRepositoryDomain
 
 type BaseRepositoryDomain[T any] interface {
 	List() ([]T, error)

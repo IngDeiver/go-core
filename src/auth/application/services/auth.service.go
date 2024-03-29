@@ -64,7 +64,21 @@ func createUserToken (user userDomain.User) (string, error) {
 	return token, err
 }
 
-func ValidateToken(tokenString string) (*authDomain.Auth, error){
+func CreateGenericToken (body  map[string]interface{}, exp time.Duration) (string, error) {
+	secret := os.Getenv("JWT_SECRET")
+	claims := authDomain.GenericJWTClaims{
+		Body: body,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(exp)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			NotBefore: jwt.NewNumericDate(time.Now()),
+		},
+	}
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(secret))
+	return token, err
+}
+
+func ValidateAuthToken(tokenString string) (*authDomain.Auth, error){
 	secret := os.Getenv("JWT_SECRET")
 	token, err := jwt.ParseWithClaims(tokenString, &authDomain.AuthWithClaims{}, func (token *jwt.Token) (interface{}, error) {
 		return []byte(secret), nil
@@ -74,6 +88,36 @@ func ValidateToken(tokenString string) (*authDomain.Auth, error){
 	case token.Valid:
 		if claims, ok := token.Claims.(*authDomain.AuthWithClaims); ok {
 			return &authDomain.Auth{ID: claims.ID, Name: claims.Name, Email: claims.Email}, nil
+		}
+		return nil, errDomain.ErrUnauthorizedError
+	case errors.Is(err, jwt.ErrTokenMalformed):
+		l.Error().Msg("That's not even a token")
+		return nil, err
+	case errors.Is(err, jwt.ErrTokenSignatureInvalid):
+		// Invalid signature
+		l.Error().Msg("Invalid signature")
+		return nil, err
+	case errors.Is(err, jwt.ErrTokenExpired) || errors.Is(err, jwt.ErrTokenNotValidYet):
+		// Token is either expired or not active yet
+		// Invalid signature
+		l.Error().Msg("Timing is everything")
+		return nil, err
+	default:
+		l.Info().Msgf("Couldn't handle this token: %v", err.Error())
+		return nil, err
+	}
+}
+
+func ValidateGenericToken(tokenString string) (*authDomain.GenericJWTClaims, error){
+	secret := os.Getenv("JWT_SECRET")
+	token, err := jwt.ParseWithClaims(tokenString, &authDomain.GenericJWTClaims{}, func (token *jwt.Token) (interface{}, error) {
+		return []byte(secret), nil
+	})
+	
+	switch {
+	case token.Valid:
+		if claims, ok := token.Claims.(*authDomain.GenericJWTClaims); ok {
+			return claims, nil
 		}
 		return nil, errDomain.ErrUnauthorizedError
 	case errors.Is(err, jwt.ErrTokenMalformed):

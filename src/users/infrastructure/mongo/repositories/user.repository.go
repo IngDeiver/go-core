@@ -1,18 +1,18 @@
 package userRepository
 
 import (
-	baseMongoRepository "github.com/ingdeiver/go-core/src/commons/infrastructure/mongo/repository"
+	mongoBaseRepository "github.com/ingdeiver/go-core/src/commons/infrastructure/mongo/repository"
 	userDomain "github.com/ingdeiver/go-core/src/users/domain"
 )
 
-// composition from base repository domain
+// composition from base repository domain and implements  BaseRepositoryDomain
 type UserRepository struct {
-    Base *baseMongoRepository.MongoBaseRepository[userDomain.User]
+    Base *mongoBaseRepository.MongoBaseRepository[userDomain.User]
 	//add another compositions here
 }
 
 func  New() UserRepository {
-	BaseRepo :=  baseMongoRepository.New[userDomain.User]()
+	BaseRepo :=  mongoBaseRepository.New[userDomain.User]()
 	return  UserRepository{Base: &BaseRepo}
 }
 
