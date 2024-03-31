@@ -9,8 +9,9 @@ import (
 	authControl "github.com/ingdeiver/go-core/src/auth/infrastructure/framework/controllers"
 	authMiddleware "github.com/ingdeiver/go-core/src/auth/infrastructure/framework/middlewares"
 	logger "github.com/ingdeiver/go-core/src/commons/infrastructure/logs"
+	email "github.com/ingdeiver/go-core/src/emails/application/services"
+	smtp "github.com/ingdeiver/go-core/src/emails/infrastructure/gomail"
 	httpServer "github.com/ingdeiver/go-core/src/http-server/infrastructure"
-	userServices "github.com/ingdeiver/go-core/src/users/application/services"
 	userRepositories "github.com/ingdeiver/go-core/src/users/infrastructure/mongo/repositories"
 	wsDomain "github.com/ingdeiver/go-core/src/ws/domain"
 	wsHandlers "github.com/ingdeiver/go-core/src/ws/infrastructure/handlers"
@@ -51,7 +52,14 @@ func loadEnv() {
 	}
 }
 
+
+/*func stop(){
+	// close db coneection
+	// close emails chanel
+}*/
+
 func start(){
+	// ------------ create router ------------
 	router := gin.New()
 	
 	s := &http.Server{
@@ -68,38 +76,30 @@ func start(){
     }
 	server := httpServer.New(s, port)
 	
-
-	userRepository := userRepositories.New()
-	userService := userServices.New(userRepository)
-	data, err := userService.Base.List()
-
-	if err != nil {
-		l.Fatal().Msgf("data errro => %v ", err)
-	}
-	l.Info().Msgf("data => %v", data)
-
-
-	authService := auth.New(&userRepository)
-	authController := authControl.New(&authService)
 	
-	// ws config
+	// ------------ ws config ------------
 	webSocketDomain := wsDomain.New()
 	webSocketManager := wsHandlers.New(webSocketDomain)
 	server.SetWebSocketHandler(webSocketManager.Handler(), router)
 
 
-	//Use it if you need to server static files
+	//------------ static files ------------
 	server.ConfigureStaticFiles("public", router) 
 	
-	// set middlewares
+	// ------------ set middlewares ------------
 	server.ConfigGlobalMiddlewares(router)
 
-	// routes
+	// ------------ routes ------------
+	// ---- pulic routes
+	userRepository := userRepositories.New()
+	authService := auth.New(&userRepository)
+	authController := authControl.New(&authService)
 	authRouter :=router.Group("/auth")
 	{
 		authRouter.POST("/login", authController.Login)
 	}
 
+	// ---- protected routes
 	userRouter :=router.Group("/users")
 	{
 		userRouter.Use(authMiddleware.AuthMiddleware())
@@ -107,7 +107,19 @@ func start(){
 	}
 	
 
-	// start server
+	// ---------- email service ------------
+	smtpService := smtp.New()
+	emailService := email.New(&smtpService)
+	emailService.CreateEmailsDeamon() // start emails chanel
+	/*emailsChannel <- &emailDomain.EmailChanel{EmailType: 1, 
+		Message: emailDomain.EmailMessageDomain{To: []string{"ingendeiver@gmail.com"}, 
+		Cc: nil, Subject: "Pruebas xdd"}, 
+		TemplateBody: emailDomain.EmailTemplateBodyDomain{
+			Title: "Este es el titulo",
+			Message: "Este es el mensaje", 
+			ButtomMessage: "Boton!", ButtomURL: "https://outlook.office.com/mail/inbox/id/AAQkAGZkYzE1NjAxLWQ4OWYtNGZhYS1hODE4LTZjNzUyZjliYzhjZAAQAOYY%2FZ9qYZFMvM0PjzGoPp0%3D"} }
+	*/
+	// ------------ start server ------------
 	l.Info().Msgf("Starting server on port: %v \n", port)
 	server.StartServer()
 }
