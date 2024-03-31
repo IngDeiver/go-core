@@ -47,16 +47,18 @@ func getGomailMessage(emailInfo emailDomain.EmailMessageDomain) *gomail.Message 
 	
 }
 
+
+var ch chan *emailDomain.EmailChanel
 // implements SMTPServiceDomain
 type Gomail struct {
 
 }
 
-func New() Gomail{
-	return Gomail{}
+func New() *Gomail{
+	return &Gomail{}
 }
 
-func (*Gomail) SendEmail(emailType emailConstants.EmailType, 
+func (Gomail) SendEmail(emailType emailConstants.EmailType, 
 	emailInfo emailDomain.EmailMessageDomain, 
 	templateInfo emailDomain.EmailTemplateBodyDomain ) (bool, error){
 	m:= getGomailMessage(emailInfo)
@@ -81,7 +83,11 @@ func (*Gomail) SendEmail(emailType emailConstants.EmailType,
 	
 }
 
-func (*Gomail) CreateEmailsDeamon() chan *emailDomain.EmailChanel {
+func (Gomail) CreateEmailsDeamon() chan *emailDomain.EmailChanel {
+	if ch != nil {
+		return ch
+	}
+
 	ch := make(chan *emailDomain.EmailChanel)
 
 	go func() {

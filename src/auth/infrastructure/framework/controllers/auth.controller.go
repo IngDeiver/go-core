@@ -1,7 +1,6 @@
 package authController
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -31,11 +30,6 @@ func (s *AuthController) Login(c *gin.Context) {
 
 }
 
-func (s *AuthController) Some(c *gin.Context) {
-	panic(errors.New("Testing recovery"))
-	c.Status(http.StatusOK)
-}
-
-func New(s *authService.AuthService) AuthController{
-	return AuthController{s}
+func New(s *authService.AuthService) *AuthController{
+	return &AuthController{s}
 }

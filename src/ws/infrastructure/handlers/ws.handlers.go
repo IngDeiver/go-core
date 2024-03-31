@@ -10,10 +10,10 @@ var l = logger.Get()
 var upgrader = websocket.Upgrader{}
 
 type WebSocketHandlerManager struct {
-	WsDomain wsDomain.WebSocketDomain
+	WsDomain *wsDomain.WebSocketDomain
 }
 
-func New(wsDomain wsDomain.WebSocketDomain) WebSocketHandlerManager{
+func New(wsDomain *wsDomain.WebSocketDomain) WebSocketHandlerManager{
 	return WebSocketHandlerManager{wsDomain}
 }
 

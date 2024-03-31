@@ -8,7 +8,7 @@ type WebSocketDomain struct {
 	Connections []*websocket.Conn
 }
 
-func New() WebSocketDomain {
+func New() *WebSocketDomain {
 	connections := []*websocket.Conn{}
-	return WebSocketDomain{Connections: connections}
+	return &WebSocketDomain{Connections: connections}
 }

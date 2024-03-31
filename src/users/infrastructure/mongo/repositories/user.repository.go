@@ -11,9 +11,9 @@ type UserRepository struct {
 	//add another compositions here
 }
 
-func  New() UserRepository {
+func  New() *UserRepository {
 	BaseRepo :=  mongoBaseRepository.New[userDomain.User]()
-	return  UserRepository{Base: &BaseRepo}
+	return  &UserRepository{Base: &BaseRepo}
 }
 
 func (u UserRepository) List() ([]userDomain.User, error) {

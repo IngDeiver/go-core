@@ -9,6 +9,7 @@ import (
 	authDomain "github.com/ingdeiver/go-core/src/auth/domain"
 	authDto "github.com/ingdeiver/go-core/src/auth/domain/dto"
 	errDomain "github.com/ingdeiver/go-core/src/commons/domain/errors"
+	email "github.com/ingdeiver/go-core/src/emails/application/services"
 
 	logger "github.com/ingdeiver/go-core/src/commons/infrastructure/logs"
 	userDomain "github.com/ingdeiver/go-core/src/users/domain"
@@ -19,6 +20,11 @@ var l = logger.Get()
 
 type AuthService struct {
 	userRepository  *userRepo.UserRepository
+	emailService *email.EmailService
+}
+
+func New(repo  *userRepo.UserRepository, emailService *email.EmailService) *AuthService{
+	return &AuthService{repo,emailService}
 }
 
 func (service *AuthService) Login(login authDto.LoginDto) (authDomain.AuthWithToken, error) {
@@ -138,6 +144,3 @@ func ValidateGenericToken(tokenString string) (*authDomain.GenericJWTClaims, err
 	}
 }
 
-func New(repo  *userRepo.UserRepository) AuthService{
-return AuthService{repo}
-}
