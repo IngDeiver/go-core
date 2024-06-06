@@ -3,6 +3,7 @@ package userRepository
 import (
 	mongoBaseRepository "github.com/ingdeiver/go-core/src/commons/infrastructure/mongo/repository"
 	userDomain "github.com/ingdeiver/go-core/src/users/domain"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 // composition from base repository domain and implements  BaseRepositoryDomain
@@ -16,8 +17,9 @@ func  New() *UserRepository {
 	return  &UserRepository{Base: &BaseRepo}
 }
 
-func (u UserRepository) List() ([]userDomain.User, error) {
-    return u.Base.List()
+
+func (u UserRepository) List(filter bson.D) ([]userDomain.User, error) {
+    return u.Base.List(filter)
 }
 
 func (u UserRepository) Add(user userDomain.User) (userDomain.User, error) {

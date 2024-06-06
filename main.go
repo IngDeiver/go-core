@@ -10,52 +10,26 @@ import (
 	authControl "github.com/ingdeiver/go-core/src/auth/infrastructure/framework/controllers"
 	authMiddleware "github.com/ingdeiver/go-core/src/auth/infrastructure/framework/middlewares"
 	logger "github.com/ingdeiver/go-core/src/commons/infrastructure/logs"
+	"github.com/ingdeiver/go-core/src/config"
 	email "github.com/ingdeiver/go-core/src/emails/application/services"
 	smtp "github.com/ingdeiver/go-core/src/emails/infrastructure/gomail"
 	httpServer "github.com/ingdeiver/go-core/src/http/infrastructure"
 	userRepositories "github.com/ingdeiver/go-core/src/users/infrastructure/mongo/repositories"
 	wsDomain "github.com/ingdeiver/go-core/src/ws/domain"
 	wsHandlers "github.com/ingdeiver/go-core/src/ws/infrastructure/handlers"
-	"github.com/joho/godotenv"
 )
 
 var l = logger.Get()
 
 
 func main() {
-	loadEnv()
+	config.LoadEnv()
+	config.InitMongoDB()
 	start()
 }
 
-func loadEnv() {
-	env := os.Getenv("APP_ENV")
-    var err error
-
-    switch env {
-    case "production":
-        err = godotenv.Load(".env.production")
-    case "development":
-        err = godotenv.Load(".env.development")
-    default:
-        err = godotenv.Load(".env.local")
-    }
-
-    if err != nil {
-        l.Fatal().Msg("Error loading .env file")
-    }
-
-	if len(env) > 0 {
-		l.Info().Msgf("Environment loaded: %s", env)
-	}else {
-		l.Info().Msg("Environment loaded: local")
-	}
-}
 
 
-/*func stop(){
-	// close db coneection
-	// close emails chanel
-}*/
 
 func start(){
 	// ------------ create router ------------
