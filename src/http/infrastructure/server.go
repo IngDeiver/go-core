@@ -58,8 +58,10 @@ func (server *HttpServer) StartServer() {
 			l.Fatal().Msgf("start server error => %v", err)
 		}
 	}()
-
+	l.Info().Msgf("Starting server on Addr %v \n", server.http.Addr)
 	server.gracefulShutdown()
+
+	
 
 }
 

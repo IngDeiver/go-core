@@ -2,6 +2,7 @@ package baseMongoService
 
 import (
 	baseRepoDomain "github.com/ingdeiver/go-core/src/commons/domain/interfaces/repository"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 // implements BaseServiceDomain
@@ -13,8 +14,12 @@ func  New[T any](repository baseRepoDomain.BaseRepositoryDomain[T])  BaseService
 	return  BaseService[T]{repository}
 }
 
-func (s  *BaseService[T]) List() ([]T, error) {
-	return s.Repository.List()
+func (s  *BaseService[T]) List(filter bson.D) ([]T, error) {
+	if(filter == nil){
+		filter = bson.D{}
+	}
+
+	return s.Repository.List(filter)
 }
 
 func (s  *BaseService[T]) Add(data T) (T, error) {

@@ -13,13 +13,13 @@ func LoggerMiddleware() gin.HandlerFunc {
     return func(c *gin.Context) {
         start := time.Now()
 
-        // Antes de atender la petición
+        // before request
         path := c.Request.URL.Path
         method := c.Request.Method
 
         c.Next()
 
-        // Después de atender la petición
+        // after request
         latency := time.Since(start)
         status := c.Writer.Status()
         userAgent := c.Request.Header.Get("User-Agent")

@@ -3,12 +3,11 @@ package config
 import (
 	"os"
 
-	logger "github.com/ingdeiver/go-core/src/commons/infrastructure/logs"
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
 
-var L = logger.Get()
 
 func LoadEnv() {
 	env := os.Getenv("APP_ENV")
@@ -17,6 +16,7 @@ func LoadEnv() {
     switch env {
     case "production":
         err = godotenv.Load(".env.production")
+        gin.SetMode(gin.ReleaseMode)
     case "development":
         err = godotenv.Load(".env.development")
     default:
@@ -24,12 +24,12 @@ func LoadEnv() {
     }
 
     if err != nil {
-        L.Fatal().Msg("Error loading .env file")
+        l.Fatal().Msg("Error loading .env file")
     }
 
 	if len(env) > 0 {
-		L.Info().Msgf("Environment loaded: %s", env)
+		l.Info().Msgf("Environment loaded: %s", env)
 	}else {
-		L.Info().Msg("Environment loaded: local")
+		l.Info().Msg("Environment loaded: local")
 	}
 }

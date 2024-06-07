@@ -51,6 +51,10 @@ func (s  MongoBaseRepository[T]) List(filter bson.D) ([]T, error) {
 		return  []T{}, err
 	}
 
+	// if result is nil, so initialize an empty list
+    if results == nil {
+        results = []T{}
+    }
 	return results, nil
 }
 

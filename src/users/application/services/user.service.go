@@ -12,9 +12,9 @@ type UserService struct {
 	//add another compositions here
 }
 
-func New(repository userRepo.UserRepository ) UserService{
+func New(repository *userRepo.UserRepository ) *UserService{
 	BaseService := baseService.New[userDomain.User](repository)
-	return UserService{Base: &BaseService }
+	return &UserService{Base: &BaseService }
 }
 
 
