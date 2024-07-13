@@ -5,8 +5,8 @@ import "github.com/ingdeiver/go-core/src/commons/domain/dtos"
 
 
 type BaseRepositoryDomain[T any] interface {
-	List(filter any, pagination *dtos.PaginationParamsDto, sort *dtos.SortParamsDto ) (*dtos.PagedResponse[T], error)
-	Add(document T) (T, error)
-	Get(ID string) (T, error)
-	Remove(ID string) (T, error)
+	FindAll(filter any, pagination *dtos.PaginationParamsDto, sort *dtos.SortParamsDto ) (*dtos.PagedResponse[T], error)
+	Create(document T) (T, error)
+	FindById(ID string) (T, error)
+	RemoveById(ID string) (T, error)
 }

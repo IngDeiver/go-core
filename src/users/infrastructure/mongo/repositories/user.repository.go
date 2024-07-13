@@ -18,19 +18,19 @@ func  New() *UserRepository {
 }
 
 
-func (u UserRepository) List(filter any, pagination *dtos.PaginationParamsDto, sort *dtos.SortParamsDto) (*dtos.PagedResponse[userDomain.User], error) {
-	return u.base.List(filter, pagination, sort)
+func (u UserRepository) FindAll(filter any, pagination *dtos.PaginationParamsDto, sort *dtos.SortParamsDto) (*dtos.PagedResponse[userDomain.User], error) {
+	return u.base.FindAll(filter, pagination, sort)
 }
 
-func (u UserRepository) Add(user userDomain.User) (userDomain.User, error) {
-    return u.base.Add(user)
+func (u UserRepository) Create(user userDomain.User) (userDomain.User, error) {
+    return u.base.Create(user)
 }
 
-func (u UserRepository) Get(ID string) (userDomain.User, error) {
-	return u.base.Get(ID)
+func (u UserRepository) FindById(ID string) (userDomain.User, error) {
+	return u.base.FindById(ID)
 }
-func (u UserRepository) Remove(ID string) (userDomain.User, error) {
-	return u.base.Remove(ID)
+func (u UserRepository) RemoveById(ID string) (userDomain.User, error) {
+	return u.base.RemoveById(ID)
 }
 
 /* are extended from this same domain if I add new functions to the base repository domain

@@ -14,18 +14,18 @@ func  New[T any](repository baseRepoDomain.BaseRepositoryDomain[T])  BaseService
 	return  BaseService[T]{repository}
 }
 
-func (s  *BaseService[T]) List(filter any, pagination *dtos.PaginationParamsDto, sort *dtos.SortParamsDto ) (*dtos.PagedResponse[T], error){
-	return s.Repository.List(filter, pagination, sort)
+func (s  *BaseService[T]) FindAll(filter any, pagination *dtos.PaginationParamsDto, sort *dtos.SortParamsDto ) (*dtos.PagedResponse[T], error){
+	return s.Repository.FindAll(filter, pagination, sort)
 }
 
-func (s  *BaseService[T]) Add(data T) (T, error) {
-	return s.Repository.Add(data)
+func (s  *BaseService[T]) Create(data T) (T, error) {
+	return s.Repository.Create(data)
 }
 
-func (s  *BaseService[T]) Get(ID string) (T, error) {
-	return s.Repository.Get(ID)
+func (s  *BaseService[T]) FindById(ID string) (T, error) {
+	return s.Repository.FindById(ID)
 }
 
-func (s  *BaseService[T]) Remove(ID string) (T, error) {
-	return s.Repository.Remove(ID)
+func (s  *BaseService[T]) RemoveById(ID string) (T, error) {
+	return s.Repository.RemoveById(ID)
 }

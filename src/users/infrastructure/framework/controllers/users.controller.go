@@ -37,7 +37,7 @@ func (s *UserController) List(c *gin.Context) {
 		return
 	}
 
-	response, err := s.userService.List(filterDTO, &paginationDTO, &sortDTO)
+	response, err := s.userService.FindAll(filterDTO, &paginationDTO, &sortDTO)
 	if err != nil {
 		c.Error(err)
 		return

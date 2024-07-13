@@ -53,7 +53,7 @@ func (s MongoBaseRepository[T]) buildFilter(filter any) bson.D {
 	return filterBson
 }
 
-func (s  MongoBaseRepository[T]) List(filter any, pagination *dtos.PaginationParamsDto, sort *dtos.SortParamsDto ) (*dtos.PagedResponse[T], error) {
+func (s  MongoBaseRepository[T]) FindAll(filter any, pagination *dtos.PaginationParamsDto, sort *dtos.SortParamsDto ) (*dtos.PagedResponse[T], error) {
 	collectionName := s.getCollectionName()
 	collection := config.GetCollection(collectionName)
 
@@ -112,15 +112,15 @@ func (s  MongoBaseRepository[T]) List(filter any, pagination *dtos.PaginationPar
 	return &pagedResponse, nil
 }
 
-func (s  MongoBaseRepository[T]) Add(user T) (T, error) {
+func (s  MongoBaseRepository[T]) Create(user T) (T, error) {
 	var result T
 	return result, nil
 }
-func (s  MongoBaseRepository[T]) Get(ID string) (T, error) {
+func (s  MongoBaseRepository[T]) FindById(ID string) (T, error) {
 	var result T
 	return result, nil
 }
-func (s  MongoBaseRepository[T]) Remove(ID string) (T, error) {
+func (s  MongoBaseRepository[T]) RemoveById(ID string) (T, error) {
 	var result T
 	return result, nil
 }

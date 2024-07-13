@@ -18,8 +18,8 @@ func New(repository *userRepo.UserRepository ) *UserService{
 	return &UserService{base: &BaseService }
 }
 
-func (s *UserService) List(filter interface{}, pagination *dtos.PaginationParamsDto, sort *dtos.SortParamsDto) (*dtos.PagedResponse[userDomain.User], error) {
-    return s.base.List(filter, pagination, sort)
+func (s *UserService) FindAll(filter interface{}, pagination *dtos.PaginationParamsDto, sort *dtos.SortParamsDto) (*dtos.PagedResponse[userDomain.User], error) {
+    return s.base.FindAll(filter, pagination, sort)
 }
 
 
