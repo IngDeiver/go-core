@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/ingdeiver/go-core/src/auth"
+	"github.com/ingdeiver/go-core/src/files"
 
 	"github.com/ingdeiver/go-core/src/config"
 	"github.com/ingdeiver/go-core/src/emails"
@@ -45,6 +46,7 @@ func initApp(){
 	users.InitUsersModule()
 	emails.InitEmailsModule()
 	auth.InitAuthModule()
+	files.InitFilesModule()
 
 	// ------------------------- 3. start server -------------------------------------------
 	server.StartServer()

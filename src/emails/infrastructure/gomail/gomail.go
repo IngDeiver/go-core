@@ -2,6 +2,7 @@ package gomail
 
 import (
 	"bytes"
+	"io"
 	"os"
 	"strconv"
 	"time"
@@ -72,6 +73,13 @@ func (Gomail) SendEmail(emailType emailConstants.EmailType,
 	}
 	m.SetBody("text/html", body.String())
 
+	// Add attachments if any
+	for _, attachment := range emailInfo.Attachments {
+		m.Attach(attachment.Filename, gomail.SetCopyFunc(func(w io.Writer) error {
+			_, err := io.Copy(w, attachment.Content)
+			return err
+		}))
+	}
 
 	d := createGomailDialer()
 

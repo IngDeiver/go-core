@@ -30,7 +30,7 @@ func (s *EmailService) AddEmailToChannel(emailType emailConstants.EmailType,
 	emailInfo emailDomain.EmailMessageDomain, 
 	templateInfo emailDomain.EmailTemplateBodyDomain){
 		if s.Channel == nil {
-			l.Error().Msg("Nt found emails channel")
+			l.Error().Msg("Not found emails channel")
 		}
 		s.Channel <- &emailDomain.EmailChanel{EmailType: emailType, Message: emailInfo, TemplateBody: templateInfo }
 }

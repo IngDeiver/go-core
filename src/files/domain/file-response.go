@@ -1,8 +1,11 @@
 package fileDomain
 
-import "io"
+import (
+	"io"
+)
 
 type FileResponse struct {
 	Body io.Reader
 	ContentType string
+	ContentLength *int64
 }

@@ -1,6 +1,7 @@
 package authMiddleware
 
 import (
+	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -13,7 +14,9 @@ func AuthMiddleware() gin.HandlerFunc {
 		const bearerSchema = "Bearer "
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" || !strings.HasPrefix(authHeader, bearerSchema) {
-			c.Error(errorsDomain.ErrUnauthorizedError)
+			c.AbortWithStatusJSON(http.StatusUnauthorized,  gin.H{
+				"message": errorsDomain.ErrUnauthorizedError.Error(),
+			})
 			return
 		}
 
@@ -21,7 +24,9 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		auth, err := authService.ValidateAuthToken(token)
 		if auth == nil || err != nil {
-			c.Error(errorsDomain.ErrUnauthorizedError)
+			c.AbortWithStatusJSON(http.StatusUnauthorized,  gin.H{
+				"message": err.Error(),
+			})
 			return
 		}
 

@@ -8,6 +8,6 @@ import (
 
 type BaseFileRepository interface {
 	Upload(body io.Reader, folder string, fileName string) (domain.File, error)
-	Remove(path string) (domain.File, error) 
-	Get(path string) (domain.FileResponse, error)
+	Remove(folder string, key string) (bool, error) 
+	Get(folder string, key string) (domain.FileResponse, error)
 }
