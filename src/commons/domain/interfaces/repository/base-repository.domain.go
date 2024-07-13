@@ -1,9 +1,11 @@
 package baseRepositoryDomain
 
-import "go.mongodb.org/mongo-driver/bson"
+import "github.com/ingdeiver/go-core/src/commons/domain/dtos"
+ 
+
 
 type BaseRepositoryDomain[T any] interface {
-	List(filter bson.D) ([]T, error)
+	List(filter any, pagination *dtos.PaginationParamsDto, sort *dtos.SortParamsDto ) (*dtos.PagedResponse[T], error)
 	Add(document T) (T, error)
 	Get(ID string) (T, error)
 	Remove(ID string) (T, error)
