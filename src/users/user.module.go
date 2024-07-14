@@ -31,8 +31,9 @@ func InitUsersModule(){
 	userRouter := router.Group("/users")
 	{
 		userRouter.Use(middlewares.AuthMiddleware())
-		userRouter.GET("", UserController.List)
 		userRouter.POST("", UserController.Create)
+		userRouter.GET("", UserController.List)
+		userRouter.GET("all", UserController.All)
 		userRouter.GET(":id", mongoMiddleware.ValidateObjectID(), UserController.FindById)
 		userRouter.DELETE(":id", mongoMiddleware.ValidateObjectID(), UserController.RemoveById)
 		userRouter.PUT(":id", mongoMiddleware.ValidateObjectID(), UserController.UpdateById)

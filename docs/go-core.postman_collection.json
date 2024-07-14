@@ -34,7 +34,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"email\": \"email@hotmail.com\",\n    \"password\":\"PWD\"\n}",
+									"raw": "{\n    \"email\": \"Arnold66@gmail.com\",\n    \"password\":\"123456789d9\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -81,7 +81,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"firstName\":\"{{$randomFirstName}}\",\n    \"lastName\":\"{{$randomLastName}}\",\n    \"email\": \"{{$randomEmail}}\",\n    \"password\":\"1234567899\"\n}",
+									"raw": "{\n    \"firstName\":\"{{$randomFirstName}}\",\n    \"lastName\":\"{{$randomLastName}}\",\n    \"email\": \"{{$randomEmail}}\",\n    \"password\":\"1234567899d\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -136,7 +136,7 @@
 									"variable": [
 										{
 											"key": "id",
-											"value": "669346af3dfdc73c3eb1deb4"
+											"value": "6693383f724faf35f59602b0"
 										}
 									]
 								}
@@ -171,18 +171,52 @@
 									}
 								},
 								"url": {
-									"raw": "{{API_URL}}/users?firstName=deiver",
+									"raw": "{{API_URL}}/users",
 									"host": [
 										"{{API_URL}}"
 									],
 									"path": [
 										"users"
-									],
-									"query": [
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "all",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
 										{
-											"key": "firstName",
-											"value": "deiver"
+											"key": "token",
+											"value": "{{AUTH_TOKEN}}",
+											"type": "string"
 										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/users/all",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"users",
+										"all"
 									]
 								}
 							},
@@ -227,7 +261,7 @@
 									"variable": [
 										{
 											"key": "id",
-											"value": "669346af3dfdc73c3eb1deb4"
+											"value": "6693383f724faf35f59602b0"
 										}
 									]
 								}
@@ -270,7 +304,7 @@
 									"variable": [
 										{
 											"key": "id",
-											"value": "669346af3dfdc73c3eb1deb4"
+											"value": "6693383f724faf35f59602b0"
 										}
 									]
 								}

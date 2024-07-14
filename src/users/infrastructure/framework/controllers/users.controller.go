@@ -45,6 +45,21 @@ func (s *UserController) List(c *gin.Context) {
 	c.JSON(http.StatusOK , response)
 }
 
+func (s *UserController) All(c *gin.Context) {
+	var filterDTO userDtos.UserFilterDto
+	if err := c.ShouldBindQuery(&filterDTO); err != nil {
+		c.Error(err)
+		return
+	}
+
+	response, err := s.userService.FindAllWithoutPagination(filterDTO)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK , response)
+}
+
 func (s *UserController) Create(c *gin.Context) {
 	var body userDtos.CreateUserDto
 	if err := c.ShouldBindJSON(&body); err != nil {

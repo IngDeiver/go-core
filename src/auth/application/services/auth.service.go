@@ -2,6 +2,7 @@ package authService
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"time"
 
@@ -10,8 +11,9 @@ import (
 	authDto "github.com/ingdeiver/go-core/src/auth/domain/dto"
 	errDomain "github.com/ingdeiver/go-core/src/commons/domain/errors"
 	emailDomain "github.com/ingdeiver/go-core/src/emails/domain/interfaces"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/bson"
 
+	"github.com/ingdeiver/go-core/src/commons/infrastructure/helpers"
 	logger "github.com/ingdeiver/go-core/src/commons/infrastructure/logs"
 	userDomain "github.com/ingdeiver/go-core/src/users/domain"
 	userRepo "github.com/ingdeiver/go-core/src/users/infrastructure/mongo/repositories"
@@ -29,19 +31,22 @@ func New(repo  *userRepo.UserRepository, emailService emailDomain.EmailServiceDo
 }
 
 func (service *AuthService) Login(login authDto.LoginDto) (authDomain.AuthWithToken, error) {
-	
-	var user *userDomain.User
 	var response authDomain.AuthWithToken
-
-	//validate if exist by emailDomain
-
-	user = &userDomain.User{"Deiver","Guerra", "Email", "PWD", primitive.NewObjectID()}
-	if user == nil {
+	//validate if exist by email
+	userInfo := bson.M{"email": login.Email}
+	user, err := service.userRepository.FindOne(userInfo)
+	
+	if user == nil || err != nil {
+		fmt.Println("---")
+		fmt.Println(user)
+		fmt.Println(err)
+		fmt.Println("---")
 		return response, errDomain.ErrUnauthorizedError
 	}
 
 	//validate password
-	if user.Password != login.Password {
+	if !helpers.CheckPasswordHash(login.Password,user.Password)  {
+		l.Warn().Msgf("%v no match password", user.FirstName)
 		return response, errDomain.ErrUnauthorizedError
 	}
 

@@ -119,7 +119,6 @@ func (s MongoBaseRepository[T]) FindAll(filter any, pagination *dtos.PaginationP
     pipeline = append(pipeline, bson.D{{Key: "$skip", Value: skip}})
     pipeline = append(pipeline, bson.D{{Key: "$limit", Value: limit}})
 
-    fmt.Println(pipeline...)
     cur, err := collection.Aggregate(context.Background(), pipeline)
     if err != nil {
         l.Error().Err(err).Msg("Error while fetching documents")
@@ -152,6 +151,39 @@ func (s MongoBaseRepository[T]) FindAll(filter any, pagination *dtos.PaginationP
     return &pagedResponse, nil
 }
 
+func (s MongoBaseRepository[T]) FindAllWithoutPagination(filter any, customPipeline bson.A) ([]T, error) {
+    collectionName := s.getCollectionName()
+    collection := config.GetCollection(collectionName)
+
+    bsonFilter := s.buildFilter(filter)
+    pipeline := bson.A{bson.D{{Key: "$match", Value: bsonFilter}}}
+
+    // include custom pipeline
+    if len(customPipeline) > 0 {
+        pipeline = append(pipeline, customPipeline...)
+    }
+
+    
+ 
+    cur, err := collection.Aggregate(context.Background(), pipeline)
+    if err != nil {
+        l.Error().Err(err).Msg("Error while fetching documents")
+        return nil, err
+    }
+    defer cur.Close(context.Background())
+
+    var results []T
+    if err = cur.All(context.Background(), &results); err != nil {
+        l.Error().Err(err).Msg("Error while decoding documents")
+        return nil, err
+    }
+
+    if results == nil {
+        results = []T{}
+    }
+    return results, nil
+}
+
 func (s MongoBaseRepository[T]) Create(user any) (T, error) {
 	var result T
 	collectionName := s.getCollectionName()
@@ -168,6 +200,25 @@ func (s MongoBaseRepository[T]) Create(user any) (T, error) {
 	}
 
 	return result, nil
+}
+
+func (s MongoBaseRepository[T]) UpdateOne(filter interface{}, document any) (*T, error) {
+	var result T
+	collectionName := s.getCollectionName()
+	collection := config.GetCollection(collectionName)
+
+	body := bson.M{"$set": document}
+	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
+
+	err := collection.FindOneAndUpdate(context.Background(), filter, body, opts).Decode(&result)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, errorsDomain.ErrNotFoundError
+		}
+		return nil, err
+	}
+
+	return &result, nil
 }
 
 func (s MongoBaseRepository[T]) FindById(ID string) (T, error) {
@@ -226,6 +277,36 @@ func (s *MongoBaseRepository[T]) UpdateById(ID string, document any) (*T, error)
 			return nil, errorsDomain.ErrNotFoundError
 		}
 		return nil, err
+	}
+	return &result, nil
+}
+
+func (s MongoBaseRepository[T]) FindOne(filter interface{}) (*T, error) {
+	var result T
+	collectionName := s.getCollectionName()
+	collection := config.GetCollection(collectionName)
+	err := collection.FindOne(context.Background(), filter).Decode(&result)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, errorsDomain.ErrNotFoundError
+		}
+		fmt.Println(err)
+		return &result, err
+	}
+	return &result, nil
+}
+
+func (s MongoBaseRepository[T]) RemoveOne(filter interface{}) (*T, error) {
+	var result T
+	collectionName := s.getCollectionName()
+	collection := config.GetCollection(collectionName)
+	err := collection.FindOneAndDelete(context.Background(), filter).Decode(&result)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, errorsDomain.ErrNotFoundError
+		}
+		fmt.Println(err)
+		return &result, err
 	}
 	return &result, nil
 }

@@ -32,6 +32,15 @@ func (u UserRepository) FindAll(filter any, pagination *dtos.PaginationParamsDto
 	return u.base.FindAll(filter, pagination, sort, userCustomPipeline)
 }
 
+func (u UserRepository) FindAllWithoutPagination(filter any, customPipeline bson.A) ([]userDomain.User , error) {
+	userCustomPipeline := bson.A{
+		bson.D{{Key: "$project",Value:  bson.M{"password": 0}}},
+	}
+
+	userCustomPipeline = append(userCustomPipeline,customPipeline...)
+	return u.base.FindAllWithoutPagination(filter,userCustomPipeline)
+}
+
 func (u UserRepository) Create(user any) (userDomain.User, error) {
 	userInfo, ok := user.(userDtos.CreateUserDto)
 	if !ok {
@@ -46,6 +55,10 @@ func (u UserRepository) Create(user any) (userDomain.User, error) {
     return u.base.Create(userInfo)
 }
 
+func (u UserRepository) UpdateOne(filter interface{}, document any) (*userDomain.User, error){
+    return u.base.UpdateOne(filter, document)
+}
+
 func (u  UserRepository) UpdateById(ID string, document any) (*userDomain.User, error){
 	return u.base.UpdateById(ID, document)
 }
@@ -53,8 +66,17 @@ func (u  UserRepository) UpdateById(ID string, document any) (*userDomain.User, 
 func (u UserRepository) FindById(ID string) (userDomain.User, error) {
 	return u.base.FindById(ID)
 }
+
 func (u UserRepository) RemoveById(ID string) (userDomain.User, error) {
 	return u.base.RemoveById(ID)
+}
+
+func (u UserRepository) FindOne(filter interface{}) (*userDomain.User, error) {
+	return u.base.FindOne(filter)
+}
+
+func (u UserRepository) RemoveOne(filter interface{}) (*userDomain.User, error) {
+	return u.base.RemoveOne(filter)
 }
 
 /* are extended from this same domain if I add new functions to the base repository domain
