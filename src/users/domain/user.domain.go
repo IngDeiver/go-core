@@ -1,10 +1,13 @@
 package userDomain
 
+import "go.mongodb.org/mongo-driver/bson/primitive"
+
 type User struct {
-	ID    string `json:"_id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-	Password string `json:"password"`
+    FirstName string             `json:"firstName,omitempty"`
+    LastName  string             `json:"lastName,omitempty" `
+    Email     string             `json:"email,omitempty" `
+    Password  string             `json:"password,omitempty" `
+    ID        primitive.ObjectID `json:"_id,omitempty" bson:"_id"`
 }
 
 func New() User {

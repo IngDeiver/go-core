@@ -7,22 +7,25 @@ import (
 
 type AuthWithToken struct {
 	ID    string `json:"_id"`
-	Name  string `json:"name"`
+	FirstName  string `json:"firstName"`
+	LastName  string `json:"lastName"`
 	Email string `json:"email"`
 	Token string `json:"token"`
 }
 
 type Auth struct {
 	ID    string `json:"_id"`
-	Name  string `json:"name"`
+	FirstName  string `json:"firstName"`
+	LastName  string `json:"lastName"`
 	Email string `json:"email"`
 }
 
 
 func NewAuthTokenResponse(user userDomain.User, token string) AuthWithToken {
 	return AuthWithToken{
-		ID: user.ID,
-		Name: user.Name,
+		ID: user.ID.String(),
+		FirstName: user.FirstName,
+		LastName: user.LastName,
 		Email: user.Email,
 		Token: token,
 	}
@@ -30,7 +33,8 @@ func NewAuthTokenResponse(user userDomain.User, token string) AuthWithToken {
 
 type AuthWithClaims struct {
 	ID    string `json:"_id"`
-	Name  string `json:"name"`
+	FirstName  string `json:"firstName"`
+	LastName  string `json:"lastName"`
 	Email string `json:"email"`
 	jwt.RegisteredClaims
 }

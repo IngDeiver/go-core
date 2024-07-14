@@ -4,6 +4,7 @@ import (
 	baseService "github.com/ingdeiver/go-core/src/commons/application/services/base"
 	"github.com/ingdeiver/go-core/src/commons/domain/dtos"
 	userDomain "github.com/ingdeiver/go-core/src/users/domain"
+	userDtos "github.com/ingdeiver/go-core/src/users/domain/dto"
 	userRepo "github.com/ingdeiver/go-core/src/users/infrastructure/mongo/repositories"
 )
 
@@ -18,8 +19,24 @@ func New(repository *userRepo.UserRepository ) *UserService{
 	return &UserService{base: &BaseService }
 }
 
-func (s *UserService) FindAll(filter interface{}, pagination *dtos.PaginationParamsDto, sort *dtos.SortParamsDto) (*dtos.PagedResponse[userDomain.User], error) {
+func (s *UserService) FindAll(filter userDtos.UserFilterDto, pagination *dtos.PaginationParamsDto, sort *dtos.SortParamsDto) (*dtos.PagedResponse[userDomain.User], error) {
     return s.base.FindAll(filter, pagination, sort)
+}
+
+
+func (s  *UserService) Create(data userDtos.CreateUserDto) (userDomain.User, error) {
+	return s.base.Create(data)
+}
+
+func (s  *UserService) UpdateById(ID string, document any) (*userDomain.User, error) {
+	return s.base.UpdateById(ID, document)
+}
+func (s  *UserService) FindById(ID string) (userDomain.User, error) {
+	return s.base.FindById(ID)
+}
+
+func (s  *UserService) RemoveById(ID string) (userDomain.User, error) {
+	return s.base.RemoveById(ID)
 }
 
 

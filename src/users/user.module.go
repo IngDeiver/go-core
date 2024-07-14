@@ -2,6 +2,7 @@ package users
 
 import (
 	middlewares "github.com/ingdeiver/go-core/src/auth/infrastructure/framework/middlewares"
+	mongoMiddleware "github.com/ingdeiver/go-core/src/commons/infrastructure/middlewares/mongo"
 	"github.com/ingdeiver/go-core/src/config"
 	userServices "github.com/ingdeiver/go-core/src/users/application/services"
 	userControllers "github.com/ingdeiver/go-core/src/users/infrastructure/framework/controllers"
@@ -31,5 +32,9 @@ func InitUsersModule(){
 	{
 		userRouter.Use(middlewares.AuthMiddleware())
 		userRouter.GET("", UserController.List)
+		userRouter.POST("", UserController.Create)
+		userRouter.GET(":id", mongoMiddleware.ValidateObjectID(), UserController.FindById)
+		userRouter.DELETE(":id", mongoMiddleware.ValidateObjectID(), UserController.RemoveById)
+		userRouter.PUT(":id", mongoMiddleware.ValidateObjectID(), UserController.UpdateById)
 	}
 }

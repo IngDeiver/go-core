@@ -10,6 +10,7 @@ import (
 	authDto "github.com/ingdeiver/go-core/src/auth/domain/dto"
 	errDomain "github.com/ingdeiver/go-core/src/commons/domain/errors"
 	emailDomain "github.com/ingdeiver/go-core/src/emails/domain/interfaces"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	logger "github.com/ingdeiver/go-core/src/commons/infrastructure/logs"
 	userDomain "github.com/ingdeiver/go-core/src/users/domain"
@@ -34,7 +35,7 @@ func (service *AuthService) Login(login authDto.LoginDto) (authDomain.AuthWithTo
 
 	//validate if exist by emailDomain
 
-	user = &userDomain.User{"1","Deiver","Email", "PWD"}
+	user = &userDomain.User{"Deiver","Guerra", "Email", "PWD", primitive.NewObjectID()}
 	if user == nil {
 		return response, errDomain.ErrUnauthorizedError
 	}
@@ -57,8 +58,9 @@ func (service *AuthService) Login(login authDto.LoginDto) (authDomain.AuthWithTo
 func createUserToken (user userDomain.User) (string, error) {
 	secret := os.Getenv("JWT_SECRET")
 	claims := authDomain.AuthWithClaims{
-		ID: user.ID,
-		Name: user.Name,
+		ID: user.ID.String(),
+		FirstName: user.FirstName,
+		LastName: user.LastName,
 		Email: user.Email,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
@@ -93,7 +95,8 @@ func ValidateAuthToken(tokenString string) (*authDomain.Auth, error){
 	switch {
 	case token.Valid:
 		if claims, ok := token.Claims.(*authDomain.AuthWithClaims); ok {
-			return &authDomain.Auth{ID: claims.ID, Name: claims.Name, Email: claims.Email}, nil
+			return &authDomain.Auth{ID: claims.ID, FirstName: claims.FirstName,
+				LastName: claims.LastName, Email: claims.Email}, nil
 		}
 		return nil, errDomain.ErrUnauthorizedError
 	case errors.Is(err, jwt.ErrTokenMalformed):

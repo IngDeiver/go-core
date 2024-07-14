@@ -44,3 +44,57 @@ func (s *UserController) List(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK , response)
 }
+
+func (s *UserController) Create(c *gin.Context) {
+	var body userDtos.CreateUserDto
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.Error(err)
+		return
+	}
+	result, err := s.userService.Create(body)
+
+	if err != nil {
+		c.Error(err)
+	}
+	c.JSON(http.StatusCreated , result)
+
+}
+
+func (s *UserController) UpdateById(c *gin.Context) {
+	id := c.Param("id")
+	var body userDtos.UpdateUserDto
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.Error(err)
+		return
+	}
+	result, err := s.userService.UpdateById(id, body)
+
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusCreated , result)
+
+}
+
+func (s *UserController) FindById(c *gin.Context){
+	id := c.Param("id")
+	result, err := s.userService.FindById(id)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK , result)
+}
+
+func (s *UserController) RemoveById(c *gin.Context){
+	id := c.Param("id")
+	result, err := s.userService.RemoveById(id)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK , result)
+}
