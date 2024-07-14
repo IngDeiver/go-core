@@ -1,13 +1,12 @@
-package loggerMiddlware
+package middlewares
 
 import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	logger "github.com/ingdeiver/go-core/src/commons/infrastructure/logs"
 )
 
-var l = logger.Get()
+
 
 func LoggerMiddleware() gin.HandlerFunc {
     return func(c *gin.Context) {

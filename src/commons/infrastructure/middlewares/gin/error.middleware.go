@@ -1,4 +1,4 @@
-package errorMiddlware
+package middlewares
 
 import (
 	"net/http"
@@ -6,10 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	errorsDomain "github.com/ingdeiver/go-core/src/commons/domain/errors"
-	logger "github.com/ingdeiver/go-core/src/commons/infrastructure/logs"
 )
-
-var l = logger.Get()
 
 // Management each error pushed by c.Error()
 func ErrorHandlingMiddleware(c *gin.Context) {

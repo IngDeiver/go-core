@@ -13,9 +13,7 @@ import (
 	logger "github.com/ingdeiver/go-core/src/commons/infrastructure/logs"
 
 	"github.com/gin-gonic/gin"
-	errorMiddlware "github.com/ingdeiver/go-core/src/commons/infrastructure/middlewares/error"
-	loggerMiddleware "github.com/ingdeiver/go-core/src/commons/infrastructure/middlewares/logger"
-	recoveryMiddleware "github.com/ingdeiver/go-core/src/commons/infrastructure/middlewares/recovery"
+	ginMiddlewares "github.com/ingdeiver/go-core/src/commons/infrastructure/middlewares/gin"
 )
 
 var l = logger.Get()
@@ -92,9 +90,9 @@ func (server *HttpServer) gracefulShutdown() {
 
 
 func (s *HttpServer) ConfigGlobalMiddlewares(router *gin.Engine) {
-	router.Use(loggerMiddleware.LoggerMiddleware())
-	router.Use(recoveryMiddleware.CustomRecoveryMiddleware())
-	router.Use(errorMiddlware.ErrorHandlingMiddleware)
+	router.Use(ginMiddlewares.LoggerMiddleware())
+	router.Use(ginMiddlewares.CustomRecoveryMiddleware())
+	router.Use(ginMiddlewares.ErrorHandlingMiddleware)
 
     corsOrigins := os.Getenv("CORS_ORIGIN")
     allowedOrigins := strings.Split(corsOrigins, ",")

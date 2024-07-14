@@ -1,4 +1,4 @@
-package recoveryMiddleware
+package middlewares
 
 import (
 	"net/http"
