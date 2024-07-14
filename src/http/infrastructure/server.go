@@ -6,8 +6,10 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
+	"github.com/gin-contrib/cors"
 	logger "github.com/ingdeiver/go-core/src/commons/infrastructure/logs"
 
 	"github.com/gin-gonic/gin"
@@ -93,4 +95,14 @@ func (s *HttpServer) ConfigGlobalMiddlewares(router *gin.Engine) {
 	router.Use(loggerMiddleware.LoggerMiddleware())
 	router.Use(recoveryMiddleware.CustomRecoveryMiddleware())
 	router.Use(errorMiddlware.ErrorHandlingMiddleware)
+
+    corsOrigins := os.Getenv("CORS_ORIGIN")
+    allowedOrigins := strings.Split(corsOrigins, ",")
+    config := cors.Config{
+        AllowOrigins: allowedOrigins,
+        AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+        AllowHeaders: []string{"Origin", "Content-Type", "Accept", "Authorization"},
+    }
+	l.Info().Msgf(`CORS origin allowed: %v`, allowedOrigins)
+	router.Use(cors.New(config))
 }
