@@ -1,11 +1,14 @@
 package users
 
 import (
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 	middlewares "github.com/ingdeiver/go-core/src/auth/infrastructure/framework/middlewares"
 	mongoMiddleware "github.com/ingdeiver/go-core/src/commons/infrastructure/middlewares/mongo"
 	"github.com/ingdeiver/go-core/src/config"
 	userServices "github.com/ingdeiver/go-core/src/users/application/services"
 	userControllers "github.com/ingdeiver/go-core/src/users/infrastructure/framework/controllers"
+	validations "github.com/ingdeiver/go-core/src/users/infrastructure/framework/validators"
 	userRepositories "github.com/ingdeiver/go-core/src/users/infrastructure/mongo/repositories"
 )
 
@@ -14,9 +17,18 @@ var UserRepository *userRepositories.UserRepository
 var UserService *userServices.UserService
 var UserController *userControllers.UserController
 
+// register custom validator here
+func registerValidators(){
+	// role validator
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("role", validations.ValidateRole)
+	}
+}
+
 // Instance Repositories, Services, Controllers and more
 func InitUsersModule(){
-	router := config.GetRouter()
+	// set user validators
+	registerValidators()
 
 	// ----- repositories -----
 	UserRepository = userRepositories.New()
@@ -26,6 +38,7 @@ func InitUsersModule(){
 	UserService = userServices.New(UserRepository)
 
 	// ----- controllers -----
+	router := config.GetRouter()
 	UserController = userControllers.New(UserService)
 
 	userRouter := router.Group("/users")

@@ -13,32 +13,31 @@ import (
 
 // composition from base repository domain and implements  BaseRepositoryDomain
 type UserRepository struct {
-    base *mongoBaseRepository.MongoBaseRepository[userDomain.User]
+	base *mongoBaseRepository.MongoBaseRepository[userDomain.User]
 	//add another compositions here
 }
 
-func  New() *UserRepository {
-	BaseRepo :=  mongoBaseRepository.New[userDomain.User]()
-	return  &UserRepository{base: &BaseRepo}
+func New() *UserRepository {
+	BaseRepo := mongoBaseRepository.New[userDomain.User]()
+	return &UserRepository{base: &BaseRepo}
 }
-
 
 func (u UserRepository) FindAll(filter any, pagination *dtos.PaginationParamsDto, sort *dtos.SortParamsDto, customPipeline bson.A) (*dtos.PagedResponse[userDomain.User], error) {
 	userCustomPipeline := bson.A{
-		bson.D{{Key: "$project",Value:  bson.M{"password": 0}}},
+		bson.D{{Key: "$project", Value: bson.M{"password": 0}}},
 	}
 
-	userCustomPipeline = append(userCustomPipeline,customPipeline...)
+	userCustomPipeline = append(userCustomPipeline, customPipeline...)
 	return u.base.FindAll(filter, pagination, sort, userCustomPipeline)
 }
 
-func (u UserRepository) FindAllWithoutPagination(filter any, customPipeline bson.A) ([]userDomain.User , error) {
+func (u UserRepository) FindAllWithoutPagination(filter any, customPipeline bson.A) ([]userDomain.User, error) {
 	userCustomPipeline := bson.A{
-		bson.D{{Key: "$project",Value:  bson.M{"password": 0}}},
+		bson.D{{Key: "$project", Value: bson.M{"password": 0}}},
 	}
 
-	userCustomPipeline = append(userCustomPipeline,customPipeline...)
-	return u.base.FindAllWithoutPagination(filter,userCustomPipeline)
+	userCustomPipeline = append(userCustomPipeline, customPipeline...)
+	return u.base.FindAllWithoutPagination(filter, userCustomPipeline)
 }
 
 func (u UserRepository) Create(user any) (userDomain.User, error) {
@@ -47,19 +46,25 @@ func (u UserRepository) Create(user any) (userDomain.User, error) {
 		return userDomain.User{}, errors.New("user convertion fail")
 	}
 
-	hash, err :=helpers.CreateHash(userInfo.Password )
+	hash, err := helpers.CreateHash(userInfo.Password)
 	if err != nil {
 		return userDomain.User{}, err
 	}
-	userInfo.Password = hash 
-    return u.base.Create(userInfo)
+	userInfo.Password = hash
+
+	// Set default role
+	if userInfo.Role == "" {
+		userInfo.Role = userDomain.UserRole
+	}
+
+	return u.base.Create(userInfo)
 }
 
-func (u UserRepository) UpdateOne(filter interface{}, document any) (*userDomain.User, error){
-    return u.base.UpdateOne(filter, document)
+func (u UserRepository) UpdateOne(filter interface{}, document any) (*userDomain.User, error) {
+	return u.base.UpdateOne(filter, document)
 }
 
-func (u  UserRepository) UpdateById(ID string, document any) (*userDomain.User, error){
+func (u UserRepository) UpdateById(ID string, document any) (*userDomain.User, error) {
 	return u.base.UpdateById(ID, document)
 }
 
