@@ -16,12 +16,13 @@ func InitAuthModule(){
     router := config.GetRouter()
 
     //services
-    AuthService = auth.New(users.UserRepository,emails.EmailService) // UserRepositoy and EmailService already was initialize
+    AuthService = auth.New(users.UserService,emails.EmailService) // UserService and EmailService already was initialize
 	AuthController = authController.New(AuthService)
     
     // controllers
     authRouter := router.Group("/auth")
 	{
 		authRouter.POST("/login", AuthController.Login)
+		authRouter.POST("/register", AuthController.Register)
 	}
 }

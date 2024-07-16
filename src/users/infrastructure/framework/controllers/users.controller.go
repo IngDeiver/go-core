@@ -70,6 +70,7 @@ func (s *UserController) Create(c *gin.Context) {
 
 	if err != nil {
 		c.Error(err)
+		return
 	}
 	c.JSON(http.StatusCreated , result)
 

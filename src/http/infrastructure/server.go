@@ -103,4 +103,6 @@ func (s *HttpServer) ConfigGlobalMiddlewares(router *gin.Engine) {
     }
 	l.Info().Msgf(`CORS origin allowed: %v`, allowedOrigins)
 	router.Use(cors.New(config))
+
+	router.Use(ginMiddlewares.RateLimiterMiddleware())
 }

@@ -3,9 +3,11 @@ package userService
 import (
 	baseService "github.com/ingdeiver/go-core/src/commons/application/services/base"
 	"github.com/ingdeiver/go-core/src/commons/domain/dtos"
+	errorsDomain "github.com/ingdeiver/go-core/src/commons/domain/errors"
 	userDomain "github.com/ingdeiver/go-core/src/users/domain"
 	userDtos "github.com/ingdeiver/go-core/src/users/domain/dto"
 	userRepo "github.com/ingdeiver/go-core/src/users/infrastructure/mongo/repositories"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 // composition from base service domain adb implements BaseServiceDomain
@@ -29,6 +31,16 @@ func (s *UserService) FindAllWithoutPagination(filter any) ([]userDomain.User, e
 
 
 func (s  *UserService) Create(data userDtos.CreateUserDto) (userDomain.User, error) {
+
+	existUser, err :=  s.base.FindOne(bson.M{"email": data.Email})
+	if err != nil && err != errorsDomain.ErrNotFoundError {
+		return userDomain.User{}, err
+	}
+	
+
+	if existUser != nil {
+		return *existUser, errorsDomain.ErrUserAlreadyExistsError
+	}
 	return s.base.Create(data)
 }
 

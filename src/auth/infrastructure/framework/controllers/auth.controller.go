@@ -30,6 +30,22 @@ func (s *AuthController) Login(c *gin.Context) {
 
 }
 
+func (s *AuthController) Register(c *gin.Context) {
+	var body authDto.RegisterDto
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.Error(err)
+		return
+	}
+	result, err := s.authService.Register(body)
+
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusCreated , result)
+
+}
+
 func New(s *authService.AuthService) *AuthController{
 	return &AuthController{s}
 }

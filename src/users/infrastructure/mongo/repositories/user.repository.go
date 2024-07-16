@@ -3,6 +3,7 @@ package userRepository
 import (
 	"errors"
 
+	authDto "github.com/ingdeiver/go-core/src/auth/domain/dto"
 	"github.com/ingdeiver/go-core/src/commons/domain/dtos"
 	"github.com/ingdeiver/go-core/src/commons/infrastructure/helpers"
 	mongoBaseRepository "github.com/ingdeiver/go-core/src/commons/infrastructure/mongo/repository"
@@ -40,12 +41,34 @@ func (u UserRepository) FindAllWithoutPagination(filter any, customPipeline bson
 	return u.base.FindAllWithoutPagination(filter, userCustomPipeline)
 }
 
-func (u UserRepository) Create(user any) (userDomain.User, error) {
-	userInfo, ok := user.(userDtos.CreateUserDto)
-	if !ok {
-		return userDomain.User{}, errors.New("user convertion fail")
+func convertToUserDomain(user interface{}) (userDomain.User, error) {
+	switch userInfo := user.(type) {
+	case userDtos.CreateUserDto:
+		return userDomain.User{
+			FirstName: userInfo.FirstName,
+			LastName:  userInfo.LastName,
+			Password:  userInfo.Password,
+			Email:     userInfo.Email,
+			Role:      userInfo.Role,
+		}, nil
+	case authDto.RegisterDto:
+		return userDomain.User{
+			FirstName: userInfo.FirstName,
+			LastName:  userInfo.LastName,
+			Password:  userInfo.Password,
+			Email:     userInfo.Email,
+			Role:      userInfo.Role,
+		}, nil
+	default:
+		return userDomain.User{}, errors.New("user conversion failed")
 	}
+}
 
+func (u UserRepository) Create(user any) (userDomain.User, error) {
+	userInfo, err := convertToUserDomain(user)
+	if err !=nil {
+		return userInfo, err
+	}
 	hash, err := helpers.CreateHash(userInfo.Password)
 	if err != nil {
 		return userDomain.User{}, err

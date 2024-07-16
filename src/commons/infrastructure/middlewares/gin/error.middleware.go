@@ -30,6 +30,10 @@ func ErrorHandlingMiddleware(c *gin.Context) {
                 c.AbortWithStatusJSON(http.StatusUnauthorized,  gin.H{
                     "message": err.Error(),
                 })
+            case errorsDomain.ErrUserAlreadyExistsError:
+                c.AbortWithStatusJSON(http.StatusBadRequest,  gin.H{
+                    "message": err.Error(),
+                })
             default :
                 c.AbortWithStatusJSON(http.StatusInternalServerError,  gin.H{
                     "message": errorsDomain.ErrInternalServerError.Error(),
