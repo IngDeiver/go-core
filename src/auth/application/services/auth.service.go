@@ -9,7 +9,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	authDomain "github.com/ingdeiver/go-core/src/auth/domain"
 	authDto "github.com/ingdeiver/go-core/src/auth/domain/dto"
-	errDomain "github.com/ingdeiver/go-core/src/commons/domain/errors"
+	errorsDomain "github.com/ingdeiver/go-core/src/commons/domain/errors"
 	"github.com/ingdeiver/go-core/src/commons/infrastructure/helpers"
 	logger "github.com/ingdeiver/go-core/src/commons/infrastructure/logs"
 	emailInterfaces "github.com/ingdeiver/go-core/src/emails/domain"
@@ -37,15 +37,15 @@ func (service *AuthService) Login(login authDto.LoginDto) (authDomain.AuthWithTo
 	//validate if exist by email
 	userInfo := bson.M{"email": login.Email}
 	user, err := service.userService.FindOne(userInfo)
-
+	
 	if user == nil || err != nil {
-		return response, errDomain.ErrUnauthorizedError
+		return response, errorsDomain.ErrUnauthorizedError
 	}
 
 	//validate password
 	if !helpers.CheckPasswordHash(login.Password, user.Password) {
 		l.Warn().Msgf("%v no match password", user.FirstName)
-		return response, errDomain.ErrUnauthorizedError
+		return response, errorsDomain.ErrUnauthorizedError
 	}
 
 	token, err := createUserToken(*user)
@@ -59,7 +59,7 @@ func (service *AuthService) Login(login authDto.LoginDto) (authDomain.AuthWithTo
 
 func (service *AuthService) SendWelcomeEmail(user userDomain.User) (bool, error) {
 	body  := make(map[string]interface{})
-	body["_id"] = user.ID
+	body["_id"] = user.ID.Hex()
     body["action"] = "restore-password"
 
 	token, err := CreateGenericToken(nil, 24 * time.Hour)
@@ -69,7 +69,7 @@ func (service *AuthService) SendWelcomeEmail(user userDomain.User) (bool, error)
 	}
 
 	emailType := emailTypes.Password
-	emailInfo := emailInterfaces.EmailMessageDomain{To: []string{user.Email}, Subject: "Welcome to Corsox - Set Your Password"}
+	emailInfo := emailInterfaces.EmailMessageDomain{To: []string{user.Email}, Subject: "Welcome to [Your Application Name] - Set Your Password"}
 	
 	frontendURL := os.Getenv("FRONTEND_URL")
     if frontendURL == "" {
@@ -86,19 +86,19 @@ func (service *AuthService) SendWelcomeEmail(user userDomain.User) (bool, error)
 	return service.emailService.SendEmail(emailType, emailInfo, template)
 }
 
-func (service *AuthService) SendForgotEmail(user userDomain.User) (bool, error) {
+func (service *AuthService) SendForgotEmail(user *userDomain.User) (bool, error) {
 	body  := make(map[string]interface{})
-	body["_id"] = user.ID
+	body["_id"] = user.ID.Hex()
     body["action"] = "restore-password"
 
-	token, err := CreateGenericToken(nil, 24 * time.Hour)
+	token, err := CreateGenericToken(body, 24 * time.Hour)
 
 	if err != nil {
 		return false, err
 	}
 
 	emailType := emailTypes.Password
-	emailInfo := emailInterfaces.EmailMessageDomain{To: []string{user.Email}, Subject: "Welcome to Corsox - Set Your Password"}
+	emailInfo := emailInterfaces.EmailMessageDomain{To: []string{user.Email}, Subject: "[Your Application Name]- Forgot Your Password"}
 	
 	frontendURL := os.Getenv("FRONTEND_URL")
     if frontendURL == "" {
@@ -113,6 +113,40 @@ func (service *AuthService) SendForgotEmail(user userDomain.User) (bool, error) 
 	}
 
 	return service.emailService.SendEmail(emailType, emailInfo, template)
+}
+
+func (service *AuthService) ForgotPassword(body authDto.ForgotPassword) (error){
+	existUser, err :=  service.userService.FindOne(bson.M{"email": body.Email})
+	if err != nil {
+		return  err
+	}
+	
+	if existUser == nil {
+		return errorsDomain.ErrNotFoundError
+	}
+
+	_,err = service.SendForgotEmail(existUser)
+	if err != nil {
+		return  err
+	}
+	return nil
+}
+
+func (service *AuthService) RestorePassword(token string, body authDto.RestorePasswordDto) (error){
+	payload, err := ValidateGenericToken(token)
+	if err != nil {
+		return err
+	}
+	if payload.Body["action"] == "restore-password" {
+		userId := payload.Body["_id"]
+		err:= service.userService.UpdatePasswordById(userId.(string), body.Password)
+		if err != nil {
+			return err
+		}
+		return nil
+	}else {
+		return errorsDomain.ErrInvalidTokenError
+	}
 }
 
 func (service *AuthService) Register(register authDto.RegisterDto) (*authDomain.AuthWithToken, error) {
@@ -145,7 +179,7 @@ func (service *AuthService) Register(register authDto.RegisterDto) (*authDomain.
 func createUserToken(user userDomain.User) (string, error) {
 	secret := os.Getenv("JWT_SECRET")
 	claims := authDomain.AuthWithClaims{
-		ID:        user.ID.String(),
+		ID:        user.ID.Hex(),
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
 		Email:     user.Email,
@@ -185,7 +219,7 @@ func ValidateAuthToken(tokenString string) (*authDomain.Auth, error) {
 			return &authDomain.Auth{ID: claims.ID, FirstName: claims.FirstName,
 				LastName: claims.LastName, Email: claims.Email}, nil
 		}
-		return nil, errDomain.ErrUnauthorizedError
+		return nil, errorsDomain.ErrUnauthorizedError
 	case errors.Is(err, jwt.ErrTokenMalformed):
 		l.Error().Msg("That's not even a token")
 		return nil, err
@@ -215,7 +249,7 @@ func ValidateGenericToken(tokenString string) (*authDomain.GenericJWTClaims, err
 		if claims, ok := token.Claims.(*authDomain.GenericJWTClaims); ok {
 			return claims, nil
 		}
-		return nil, errDomain.ErrUnauthorizedError
+		return nil, errorsDomain.ErrInvalidTokenError
 	case errors.Is(err, jwt.ErrTokenMalformed):
 		l.Error().Msg("That's not even a token")
 		return nil, err
@@ -224,8 +258,6 @@ func ValidateGenericToken(tokenString string) (*authDomain.GenericJWTClaims, err
 		l.Error().Msg("Invalid signature")
 		return nil, err
 	case errors.Is(err, jwt.ErrTokenExpired) || errors.Is(err, jwt.ErrTokenNotValidYet):
-		// Token is either expired or not active yet
-		// Invalid signature
 		l.Error().Msg("Timing is everything")
 		return nil, err
 	default:

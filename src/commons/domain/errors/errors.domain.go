@@ -7,4 +7,5 @@ var (
 	ErrUnauthorizedError = errors.New("unauthorized")
 	ErrNotFoundError = errors.New("not found resource")
 	ErrUserAlreadyExistsError = errors.New("user already exists")
+	ErrInvalidTokenError = errors.New("invalid token")
 )

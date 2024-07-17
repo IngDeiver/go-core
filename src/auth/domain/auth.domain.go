@@ -23,7 +23,7 @@ type Auth struct {
 
 func NewAuthTokenResponse(user userDomain.User, token string) AuthWithToken {
 	return AuthWithToken{
-		ID: user.ID.String(),
+		ID: user.ID.Hex(),
 		FirstName: user.FirstName,
 		LastName: user.LastName,
 		Email: user.Email,

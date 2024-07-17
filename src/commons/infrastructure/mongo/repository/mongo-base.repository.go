@@ -2,7 +2,6 @@ package commonMongoRepository
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"strings"
 
@@ -268,7 +267,7 @@ func (s *MongoBaseRepository[T]) UpdateById(ID string, document any) (*T, error)
 	}
 
 	filter := bson.D{{Key: "_id", Value: objID}}
-	update := bson.D{{Key: "$set", Value: document}}
+	update := bson.M{"$set": document}
 	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
 
 	err = collection.FindOneAndUpdate(context.Background(), filter, update, opts).Decode(&result)
@@ -290,7 +289,6 @@ func (s MongoBaseRepository[T]) FindOne(filter interface{}) (*T, error) {
 		if err == mongo.ErrNoDocuments {
 			return nil, errorsDomain.ErrNotFoundError
 		}
-		fmt.Println(err)
 		return &result, err
 	}
 	return &result, nil
@@ -305,7 +303,6 @@ func (s MongoBaseRepository[T]) RemoveOne(filter interface{}) (*T, error) {
 		if err == mongo.ErrNoDocuments {
 			return nil, errorsDomain.ErrNotFoundError
 		}
-		fmt.Println(err)
 		return &result, err
 	}
 	return &result, nil

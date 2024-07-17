@@ -66,7 +66,7 @@ func convertToUserDomain(user interface{}) (userDomain.User, error) {
 
 func (u UserRepository) Create(user any) (userDomain.User, error) {
 	userInfo, err := convertToUserDomain(user)
-	if err !=nil {
+	if err != nil {
 		return userInfo, err
 	}
 	hash, err := helpers.CreateHash(userInfo.Password)
@@ -85,6 +85,18 @@ func (u UserRepository) Create(user any) (userDomain.User, error) {
 
 func (u UserRepository) UpdateOne(filter interface{}, document any) (*userDomain.User, error) {
 	return u.base.UpdateOne(filter, document)
+}
+
+func (s *UserRepository) UpdatePasswordById(ID string, password string) error {
+	hash, err := helpers.CreateHash(password)
+	if err != nil {
+		return err
+	}
+	_, err = s.base.UpdateById(ID, userDtos.UpdateUserDto{Password: hash})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (u UserRepository) UpdateById(ID string, document any) (*userDomain.User, error) {
