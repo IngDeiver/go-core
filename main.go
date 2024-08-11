@@ -8,8 +8,6 @@ import (
 	"github.com/ingdeiver/go-core/src/emails"
 
 	"github.com/ingdeiver/go-core/src/users"
-
-	"github.com/ingdeiver/go-core/src/ws"
 )
 
 
@@ -42,7 +40,7 @@ func initApp(){
 	server.ConfigGlobalMiddlewares(router)
 
 	// ------------------------ 2. load modules ------------------------------------------------
-	ws.InitWsModule() // optional, if don't need it, you can remove this line
+	//ws.InitWsModule() // optional, if don't need it, you can remove this line
 	users.InitUsersModule()
 	emails.InitEmailsModule()
 	auth.InitAuthModule()
