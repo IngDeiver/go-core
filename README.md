@@ -37,7 +37,7 @@
 3. **Set up environment variables:**
    Run this command and custom with your environmetn variables
    ```
-   cp .env.examle .env.local
+   cp .env.example .env.local
 
 5. **Run the project:**
    ```
