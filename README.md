@@ -27,7 +27,7 @@
 
 1. **Clone the repository:**
    ```sh
-   git clone https://github.com/yourusername/go-core.git
+   git clone https://github.com/IngDeiver/go-core.git
    cd go-core
    
 2. **Install dependencies:**
