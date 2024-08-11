@@ -2,6 +2,7 @@ package commonMongoRepository
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -21,10 +22,19 @@ var l = logger.Get()
 
 // implements BaseRepositoryDomain
 type MongoBaseRepository[T any] struct {
+	regexFields []string
 }
 
 func New[T any]() MongoBaseRepository[T] {
-	return MongoBaseRepository[T]{}
+	return MongoBaseRepository[T]{regexFields: []string{}}
+}
+
+func (s *MongoBaseRepository[T]) GetRegexFields() []string {
+	return s.regexFields
+}
+
+func (s *MongoBaseRepository[T]) SetRegexFields(regexFields []string){
+	 s.regexFields = regexFields
 }
 
 func (s MongoBaseRepository[T]) getCollectionName() string {
@@ -39,10 +49,9 @@ func (s MongoBaseRepository[T]) getCollectionName() string {
 
 }
 
-func (s MongoBaseRepository[T]) buildFilter(filter any) bson.D {
+func (s MongoBaseRepository[T]) buildFilter(filter any, regexFields []string) bson.D {
 	v := reflect.ValueOf(filter)
 	filterBson := bson.D{}
-
 	for i := 0; i < v.NumField(); i++ {
 		field := v.Type().Field(i)
 		value := v.Field(i)
@@ -59,6 +68,7 @@ func (s MongoBaseRepository[T]) buildFilter(filter any) bson.D {
 
 			filterValue :=  value.Interface()
 
+			// multiple values to filter
 			if value.Kind() == reflect.String {
 				strValue := value.Interface().(string)
 				if strings.Contains(strValue, ",") {
@@ -66,6 +76,17 @@ func (s MongoBaseRepository[T]) buildFilter(filter any) bson.D {
 						"$in": strings.Split(strValue, ","),
 					}
 					filterValue = query
+				}
+			}
+
+			// regex filter  
+			if value.Kind() == reflect.String {
+				fieldName := tag
+				if helpers.ContainsStr(regexFields, fieldName){
+					strValue := value.Interface().(string)
+					pattern :=  fmt.Sprintf(".*%s.*", strValue)
+					filterValue = bson.M{"$regex": pattern}
+					
 				}
 			}
 
@@ -80,7 +101,7 @@ func (s MongoBaseRepository[T]) FindAll(filter any, pagination *dtos.PaginationP
     collectionName := s.getCollectionName()
     collection := config.GetCollection(collectionName)
 
-    bsonFilter := s.buildFilter(filter)
+    bsonFilter := s.buildFilter(filter, s.regexFields)
     pipeline := bson.A{}
 
     // set sort
@@ -166,7 +187,7 @@ func (s MongoBaseRepository[T]) FindAllWithoutPagination(filter any, customPipel
     collectionName := s.getCollectionName()
     collection := config.GetCollection(collectionName)
 
-    bsonFilter := s.buildFilter(filter)
+    bsonFilter := s.buildFilter(filter, s.regexFields)
     pipeline := bson.A{bson.D{{Key: "$match", Value: bsonFilter}}}
 
     // include custom pipeline

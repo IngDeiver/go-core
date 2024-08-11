@@ -8,6 +8,7 @@ import (
 	"github.com/ingdeiver/go-core/src/commons/infrastructure/helpers"
 	mongoBaseRepository "github.com/ingdeiver/go-core/src/commons/infrastructure/mongo/repository"
 	userDomain "github.com/ingdeiver/go-core/src/users/domain"
+	"github.com/ingdeiver/go-core/src/users/domain/constants"
 	userDtos "github.com/ingdeiver/go-core/src/users/domain/dto"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -20,6 +21,8 @@ type UserRepository struct {
 
 func New() *UserRepository {
 	BaseRepo := mongoBaseRepository.New[userDomain.User]()
+	// set here your necesary fields to filter with regex expression
+	BaseRepo.SetRegexFields(constants.UserRegexFields)
 	return &UserRepository{base: &BaseRepo}
 }
 
