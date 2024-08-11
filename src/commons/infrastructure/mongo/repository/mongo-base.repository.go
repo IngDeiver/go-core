@@ -5,10 +5,10 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/ingdeiver/go-core/src/commons/application/helpers"
 	"github.com/ingdeiver/go-core/src/commons/domain/dtos"
 	errorsDomain "github.com/ingdeiver/go-core/src/commons/domain/errors"
 	baseSchema "github.com/ingdeiver/go-core/src/commons/domain/interfaces"
-	"github.com/ingdeiver/go-core/src/commons/infrastructure/helpers"
 	logger "github.com/ingdeiver/go-core/src/commons/infrastructure/logs"
 	"github.com/ingdeiver/go-core/src/config"
 	"go.mongodb.org/mongo-driver/bson"
@@ -57,7 +57,19 @@ func (s MongoBaseRepository[T]) buildFilter(filter any) bson.D {
 				value = value.Elem()
 			}
 
-			filterBson = append(filterBson, bson.E{Key: tag, Value: value.Interface()})
+			filterValue :=  value.Interface()
+
+			if value.Kind() == reflect.String {
+				strValue := value.Interface().(string)
+				if strings.Contains(strValue, ",") {
+					query := bson.M{
+						"$in": strings.Split(strValue, ","),
+					}
+					filterValue = query
+				}
+			}
+
+			filterBson = append(filterBson, bson.E{Key: tag, Value: filterValue})
 		}
 	}
 
@@ -193,7 +205,7 @@ func (s MongoBaseRepository[T]) Create(user any) (T, error) {
 		return result, err
 	}
 
-	err = helpers.CopyAndSetID(&result, user, insertResult.InsertedID.(primitive.ObjectID))
+	err = helpers.SetFieldByReflection(&result, user, insertResult.InsertedID.(primitive.ObjectID), "ID")
 	if err != nil {
 		return result, err
 	}
