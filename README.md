@@ -35,7 +35,7 @@
    go mod tidy
    
 3. **Set up environment variables:**
-   Run this command and custom with your environmetn variables
+   Run this command and custom with your environment variables
    ```
    cp .env.example .env.local
 
